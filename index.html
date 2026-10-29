@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="theme-color" content="#060d1c">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Balap Baca — Mini 4WD Night Circuit</title>
+<style>
+:root{--gold:#e0b84a;--gold2:#8a6a14;--red:#d6202f;--ink:#f4efe3;--card:#12141a;--bg:#06070a;--disp:Impact,Haettenschweiler,"Arial Narrow Bold","Arial Black",sans-serif;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px);color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Segoe UI","Trebuchet MS",system-ui,sans-serif;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+button{font:inherit;cursor:pointer;color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px;box-shadow:0 0 0 6px #000}
+#g{position:relative;height:100%;overflow:hidden}
+#cv{position:absolute;inset:0;width:100%;height:100%;display:block}
+#hud{position:absolute;top:0;left:0;right:0;display:flex;flex-direction:column;background:linear-gradient(#0c0d11,#181b22);border-bottom:3px solid var(--gold);box-shadow:0 8px 22px rgba(0,0,0,.65);color:#fff;padding:8px 10px 10px;z-index:3}
+#hud[hidden],#ctl[hidden],.scr[hidden]{display:none}
+#row1{display:flex;align-items:center;gap:10px}
+#track{position:relative;flex:1;height:30px;border-radius:15px;border:2px solid #3a3d47;background:linear-gradient(90deg,rgba(224,184,74,.55) 50%,transparent 0) 0 50%/20px 2px repeat-x,linear-gradient(#2b2e36,#16181d)}
+#track::after{content:"";position:absolute;right:-2px;top:-2px;bottom:-2px;width:20px;border-radius:0 15px 15px 0;background:conic-gradient(#f4efe3 25%,#07080b 0 50%,#f4efe3 0 75%,#07080b 0) 0 0/10px 10px}
+#track b{display:none}
+.dot{position:absolute;top:1px;width:24px;height:24px;border-radius:50%;border:3px solid #fff;display:grid;place-items:center;font-size:11px;font-weight:900;color:#fff;box-shadow:0 2px 4px rgba(0,0,0,.6)}
+.dot.me{top:-2px;width:30px;height:30px;font-size:15px;z-index:2;box-shadow:0 0 0 3px var(--gold),0 0 12px var(--gold)}
+.sbtn{min-width:48px;min-height:48px;border:2px solid var(--gold);border-radius:12px;background:linear-gradient(#34373f,#14161c);color:#fff;font-size:22px;box-shadow:0 3px 0 #000}
+#q{order:-1;position:relative;margin:0 0 8px;background:linear-gradient(#fffdf5,#eadfbd);color:#14161a;border:3px solid var(--gold);border-radius:16px;box-shadow:0 0 0 2px #000,inset 0 -4px 0 rgba(138,106,20,.25);padding:6px 10px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+#q .sbtn{position:absolute;right:6px;top:6px}
+#qe{font-size:clamp(44px,12vw,72px);line-height:1.1}
+#qt{flex:0 1 auto;font-size:clamp(24px,6.4vw,44px);line-height:1.2;font-weight:900}
+#hud.dl #q{flex-direction:row;gap:10px;padding:4px 56px 4px 12px}
+#hud.dl #qe{font-size:clamp(30px,8vw,44px)}
+#hud.dl #qt{flex:1;font-size:clamp(18px,4.6vw,30px)}
+@media (max-height:520px){#q{flex-direction:row;gap:10px;padding:4px 56px 4px 12px}#qe{font-size:clamp(30px,8vh,44px)}#qt{flex:1;font-size:clamp(18px,5vh,30px)}}
+#ctl{position:absolute;left:0;right:0;bottom:12px;display:flex;justify-content:space-between;padding:0 14px;z-index:3;pointer-events:none}
+#ctl button{pointer-events:auto;width:30%;min-height:64px;border:2px solid var(--gold);border-radius:16px;background:linear-gradient(#3a3e4a,#14161c);color:var(--gold);font-size:30px;font-weight:900;box-shadow:0 5px 0 #000,0 0 18px rgba(224,184,74,.25)}
+#ctl button:active{transform:translateY(3px);box-shadow:0 2px 0 #000}
+.scr{position:absolute;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;padding:14px;overflow:auto;background:radial-gradient(ellipse at 50% 35%,rgba(6,7,10,.45),rgba(6,7,10,.9))}
+.card{position:relative;background:linear-gradient(160deg,#1b1e27,#0c0d11);color:var(--ink);border-radius:18px;padding:20px;width:min(100%,460px);text-align:center;border:2px solid var(--gold);box-shadow:0 0 0 1px #000,0 0 0 6px rgba(224,184,74,.16),0 24px 60px rgba(0,0,0,.75);margin:auto;overflow:hidden;animation:rise .7s cubic-bezier(.2,.8,.2,1) both}
+.card::before{content:"";display:block;height:16px;margin:-20px -20px 16px;background:conic-gradient(#f4efe3 25%,#07080b 0 50%,#f4efe3 0 75%,#07080b 0) 0 0/16px 16px;border-bottom:2px solid var(--gold)}
+@keyframes rise{from{opacity:0;transform:translateY(40px) scale(.96)}to{opacity:1;transform:none}}
+h1{margin:0;font-family:var(--disp);font-weight:400;font-style:italic;text-transform:uppercase;letter-spacing:.03em;font-size:clamp(44px,13vw,64px);line-height:1;background:linear-gradient(#fff7da,#e0b84a 52%,#8a6a14);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 3px 0 #000) drop-shadow(0 0 14px rgba(224,184,74,.35))}
+.tag{margin:6px 0 12px;color:var(--gold);font-weight:700;font-size:14px;letter-spacing:.14em}
+h2{margin:0 0 6px;font-family:var(--disp);font-weight:400;font-style:italic;font-size:38px;color:var(--gold);text-shadow:0 3px 0 #000,0 0 18px rgba(224,184,74,.4)}
+#rs{color:var(--gold);text-shadow:0 0 18px rgba(224,184,74,.6)}
+.card p{margin:6px 0 14px;font-size:17px;line-height:1.35}
+.lv{display:block;width:100%;margin:10px 0;min-height:72px;padding:8px 14px;border:0;border-left:8px solid var(--gold);border-radius:12px;background:linear-gradient(100deg,var(--c),#0c0d11 135%);color:#fff;text-align:left;font-family:var(--disp);font-weight:400;font-style:italic;font-size:26px;letter-spacing:.02em;box-shadow:0 5px 0 #000,inset 0 1px 0 rgba(255,255,255,.25)}
+.lv small{display:block;font-family:"Segoe UI","Trebuchet MS",system-ui,sans-serif;font-style:normal;letter-spacing:0;font-size:15px;font-weight:600;opacity:.92}
+.lv i{float:right;font-style:normal;font-size:20px;margin-top:6px;color:var(--gold)}
+.lv:active,.go:active{transform:translateY(4px)}
+.go{min-height:60px;border:0;border-radius:12px;padding:8px 24px;background:linear-gradient(#f6dc86,#e0b84a 55%,#b88d22);color:#14161a;font-family:var(--disp);font-style:italic;font-weight:400;font-size:24px;letter-spacing:.03em;box-shadow:0 6px 0 var(--gold2),0 0 18px rgba(224,184,74,.3);margin:6px 4px}
+.go.alt{background:linear-gradient(#34373f,#14161c);color:var(--gold);border:2px solid var(--gold);box-shadow:0 6px 0 #000}
+.hint{font-size:15px;opacity:.8}
+.chips{display:flex;gap:8px;margin:10px 0}.chips[hidden]{display:none}
+.chip{flex:1;min-height:60px;border:2px solid #3a3d47;border-radius:12px;background:linear-gradient(#232630,#14161c);color:var(--ink);font-weight:800;font-size:15px;line-height:1.15;padding:4px}
+.chip[aria-checked="true"]{background:linear-gradient(#f6dc86,#e0b84a);border-color:#fff3c4;color:#14161a;box-shadow:0 0 16px rgba(224,184,74,.45)}
+#pads{position:absolute;left:0;right:0;bottom:10px;z-index:3;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 10px}
+#pads[hidden]{display:none}
+.pad{background:rgba(255,255,255,.96);color:#143a5c;border:4px solid;border-radius:18px;padding:4px 6px 6px;font-weight:900;font-size:14px}
+.pad .bs{display:flex;gap:6px;margin-top:3px}
+.pad button{flex:1;min-height:48px;border:0;border-radius:12px;font-weight:900;font-size:22px}
+.pad button.on{box-shadow:inset 0 0 0 4px #fff,0 0 0 4px #143a5c;transform:scale(1.05)}
+#pads{top:0;bottom:0;display:block;padding:0;pointer-events:none}
+.pad{position:absolute;display:flex;justify-content:space-between;align-items:flex-end;padding:0 6px;background:none;border:0;border-radius:0;pointer-events:none}
+.pad button{flex:none;width:42%;min-height:46px;color:#fff;border:2px solid rgba(255,255,255,.7);box-shadow:0 4px 0 rgba(0,0,0,.5);pointer-events:auto}
+.pad button:active{transform:translateY(3px)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* MINI 4WD NIGHT CIRCUIT — self-contained, no external assets */
+:root{--gold:#65edff;--gold2:#137991;--ink:#edf8ff;--bg:#060d1c}
+body{background:#060d1c}
+.scr{background:linear-gradient(115deg,rgba(3,9,23,.7),rgba(3,9,23,.86));backdrop-filter:blur(3px);padding:28px 20px}
+.card{border:1px solid #34516c;border-radius:24px;background:linear-gradient(145deg,rgba(21,40,64,.98),rgba(6,17,34,.98));box-shadow:0 28px 90px #0009,0 0 60px #23caff0c;padding:28px}
+.card::before{height:5px;margin:-28px -28px 24px;border:0;background:linear-gradient(90deg,#59ecff 0 40%,#edf8ff 40% 55%,#ff4d65 55% 100%)}
+#menu .card{width:min(100%,940px);display:grid;grid-template-columns:1fr 1fr;gap:0 32px;text-align:left}
+#menu .card::before{grid-column:1/-1}
+.eyebrow{font-size:11px;font-weight:800;letter-spacing:.2em;color:#8da9c4;display:flex;align-items:center;gap:8px;margin-bottom:16px}
+.eyebrow::before{content:'';width:7px;height:7px;background:#65edff;border-radius:50%;box-shadow:0 0 12px #65edff}
+h1{font-size:clamp(50px,6vw,72px);line-height:.95;background:linear-gradient(#fff 25%,#9beaff);filter:drop-shadow(3px 4px 0 #193e61);letter-spacing:.01em}
+.tag{font-size:12px;color:#65edff;letter-spacing:.22em;text-transform:uppercase;margin:12px 0 20px}
+.card p{font-size:15px;line-height:1.6;color:#b7cbe0;margin-bottom:18px}
+.garage{position:relative;height:235px;margin:12px 0 16px;isolation:isolate;border:1px solid #25425c;border-radius:18px;overflow:hidden;background:radial-gradient(ellipse at 50% 40%,#163f5b,transparent 67%),repeating-linear-gradient(0deg,transparent 0 27px,#76d7ff0c 28px 29px),repeating-linear-gradient(90deg,transparent 0 27px,#76d7ff0c 28px 29px),#09182b}
+.garage::before{content:'';position:absolute;width:310px;height:145px;border:22px solid #3c66864d;border-radius:50%;transform:rotate(-30deg);left:15px;top:42px;box-shadow:0 0 0 2px #73e7ff55,inset 0 0 0 2px #73e7ff55}
+.garage::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 25%,#bdf8ff14 45%,transparent 60%);transform:translateX(-100%);animation:scan 5s ease-in-out infinite;pointer-events:none}
+.hero-car{position:absolute;inset:6px 0 0;width:100%;height:220px;filter:drop-shadow(0 18px 10px #0009);animation:hovercar 3.5s ease-in-out infinite}
+.garage-label{position:absolute;left:14px;bottom:13px;font-size:10px;letter-spacing:.15em;color:#89abc6;font-weight:800}
+.garage-label b{color:#eafaff;display:block;font-size:14px;letter-spacing:.05em;margin-bottom:3px}
+.spec{position:absolute;right:12px;top:12px;font-size:10px;font-weight:900;letter-spacing:.08em;padding:6px 8px;border-radius:5px;color:#65edff;border:1px solid #65edff55;background:#061326aa}
+.steps{display:flex;gap:8px;flex-wrap:wrap;color:#a2bcd2;font-size:12px}.steps span{display:flex;align-items:center;gap:6px}.steps b{display:grid;place-items:center;border:1px solid #426079;border-radius:50%;width:19px;height:19px;font-size:10px;color:#65edff}
+.setup{padding-top:3px}.setup-label{font-size:11px;letter-spacing:.15em;text-transform:uppercase;font-weight:800;color:#91abc3;margin-bottom:8px}.setup-label.classes{margin-top:20px}
+.chips{gap:7px;margin:0 0 10px}.chip{border:1px solid #34516c;background:#11243b;font-size:13px;color:#b7cbe0;min-height:66px;border-radius:10px;transition:background .2s,transform .2s}
+.chip:hover{background:#1c3853;transform:translateY(-2px)}
+.chip[aria-checked="true"]{background:#163e53;border-color:#65edff;color:#f0fdff;box-shadow:inset 0 -3px #65edff,0 0 18px #65edff12}
+.lv{position:relative;font-family:inherit;font-style:normal;font-size:21px;font-weight:850;background:linear-gradient(105deg,color-mix(in srgb,var(--c),#112338 78%),#101e31);border:1px solid #36516c;border-left:4px solid var(--c);border-radius:12px;min-height:73px;margin:10px 0;padding:10px 13px;box-shadow:none;transition:transform .18s,border-color .18s}
+.lv:hover{transform:translateX(4px);border-color:#65edff}.lv small{font-size:12px;font-weight:500;color:#a9c0d7;margin-top:4px}.lv i{font-size:14px}.lv::after{content:'→';position:absolute;right:14px;top:26px;color:#80d9ef}.lv i:not(:empty){margin-right:17px;font-size:11px}
+#mh{font-size:12px;line-height:1.5;margin:14px 0 0;color:#a7bdd0;opacity:1}
+.sbtn{border:1px solid #3f657e;background:linear-gradient(#1b3750,#0d2034);border-radius:10px;box-shadow:0 3px 0 #030b16;color:#c9f5ff}
+#fs2{border:1px solid #3f657e!important;z-index:2;min-width:40px;min-height:40px}
+#hud{background:linear-gradient(#08172cf5,#0d2338f5);border-bottom:2px solid #4edcf7;box-shadow:0 8px 25px #02091199;padding:8px 12px 10px}
+#q{background:linear-gradient(115deg,#f6fcff,#dceffc);border:2px solid #77dbef;border-radius:14px;box-shadow:inset 0 -4px #c4dfef;color:#11283b}
+#track{border-color:#385770;background:repeating-linear-gradient(90deg,transparent 0 12px,#a7d3e755 12px 21px,transparent 21px 30px) center/100% 2px no-repeat,#071526}
+.dot.me{box-shadow:0 0 0 2px #65edff,0 0 15px #65edff70}
+#ctl{bottom:16px;padding:0 20px}#ctl button{max-width:200px;min-height:60px;border:1px solid #60d8f5;background:linear-gradient(135deg,#173c59ec,#0b1b30ed);box-shadow:0 5px 0 #020a17,0 0 24px #24c5e520;border-radius:14px;color:#b8f7ff}
+.go{background:linear-gradient(#adf8ff,#61deed);box-shadow:0 5px 0 #227a96;font-family:inherit;font-weight:850;font-size:19px;font-style:normal}.go.alt{border:1px solid #3f657e;background:#142c43}
+h2{color:#a7f6ff;font-size:36px;text-shadow:none}#rs{text-shadow:0 0 20px #65edff50}
+#res .card{width:min(100%,490px)}
+#ctl{justify-content:center;gap:12px}
+#ctl button{width:clamp(72px,22vw,116px);max-width:116px}
+.pad{justify-content:center;gap:8px}
+.pad button{width:38%;max-width:100px}
+@keyframes hovercar{0%,100%{transform:translateY(0) rotate(-24deg)}50%{transform:translateY(-8px) rotate(-22deg)}}
+@keyframes scan{0%,20%{transform:translateX(-100%)}70%,100%{transform:translateX(100%)}}
+@media(max-width:720px){.scr{padding:16px 12px}#menu .card{width:min(100%,470px);display:block;padding:22px}#menu .card::before{margin:-22px -22px 20px}.eyebrow{margin-bottom:12px;font-size:10px}h1{font-size:56px}.tag{margin:10px 0 12px}.garage{height:155px;margin:8px 0 14px}.hero-car{height:160px;inset:-9px 0 0}.garage::before{top:7px;left:calc(50% - 155px);height:120px}.garage-label b{font-size:12px}.garage-label{font-size:8px;bottom:10px}.spec{font-size:9px}.steps{margin-bottom:22px;font-size:11px}.card p{font-size:14px;margin-bottom:12px}.setup-label.classes{margin-top:16px}.lv{min-height:68px}.chip{min-height:59px}#mh{font-size:11px}}
+@media(max-height:550px) and (min-width:721px){.scr{padding:12px}.card{padding:22px}#menu .card::before{margin:-22px -22px 16px}.garage{height:155px}.hero-car{height:155px;inset:-6px 0 0}.eyebrow{margin-bottom:10px}.tag{margin:8px 0 10px}.lv{min-height:60px;margin:7px 0}.chip{min-height:54px}.setup-label.classes{margin-top:12px}#mh{font-size:11px}.card p{font-size:13px}h1{font-size:54px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}}
+
+</style>
+</head>
+<body>
+<div id="g">
+  <canvas id="cv" aria-label="Arena balapan: tiga jalur dengan papan jawaban"></canvas>
+  <header id="hud" hidden>
+    <div id="row1"><button class="sbtn" id="home" type="button" aria-label="Kembali ke menu">🏠</button><div id="track"><b>🏁</b></div><button class="sbtn" id="snd" type="button" aria-label="Suara hidup atau mati">🔊</button><button class="sbtn fsx" id="fs" type="button" aria-label="Layar penuh">⛶</button></div>
+    <div id="q"><span id="qe"></span><b id="qt"></b><button class="sbtn" id="sp" type="button" aria-label="Dengarkan soal">📢</button></div>
+  </header>
+  <nav id="ctl" hidden aria-label="Kemudi"><button id="bl" type="button" aria-label="Pindah jalur ke kiri">◀</button><button id="br" type="button" aria-label="Pindah jalur ke kanan">▶</button></nav>
+  <div id="pads" hidden></div>
+
+  <section id="menu" class="scr"><button class="sbtn fsx" id="fs2" type="button" aria-label="Layar penuh" style="position:absolute;top:10px;right:10px;border:2px solid #e0b84a">⛶</button><div class="card">
+<div class="intro">
+<div class="eyebrow">BELAJAR SERU • MINI 4WD</div>
+<h1>BALAP<br>BACA</h1><div class="tag">Night circuit / Reading cup</div>
+<p>Baca soalnya. Pilih jalurnya.<br>Pacukan mobilmu menuju podium!</p>
+<div class="garage" aria-label="Mobil Mini 4WD biru dengan spoiler dan roda roller">
+<span class="spec">4WD / TURBO</span>
+<svg class="hero-car" viewBox="0 0 360 240" aria-hidden="true">
+<defs><linearGradient id="shell" x2="1" y2=".7"><stop stop-color="#9df9ff"/><stop offset=".35" stop-color="#24baff"/><stop offset=".65" stop-color="#2867f4"/><stop offset="1" stop-color="#153b9e"/></linearGradient><linearGradient id="glass" x2="1" y2="1"><stop stop-color="#9dfaff"/><stop offset=".4" stop-color="#255878"/><stop offset="1" stop-color="#071a35"/></linearGradient></defs>
+<g transform="translate(180 117)">
+<ellipse cy="14" rx="60" ry="91" fill="#020a18" opacity=".5"/>
+<g fill="#080f1d" stroke="#4d6984" stroke-width="2"><rect x="-48" y="-65" width="21" height="40" rx="7"/><rect x="27" y="-65" width="21" height="40" rx="7"/><rect x="-48" y="32" width="21" height="40" rx="7"/><rect x="27" y="32" width="21" height="40" rx="7"/></g>
+<path d="M-52-78H52M-55 80H55" stroke="#799ab3" stroke-width="7"/>
+<g fill="#13304b" stroke="#69e7ff" stroke-width="3"><circle cx="-54" cy="-78" r="8"/><circle cx="54" cy="-78" r="8"/><circle cx="-57" cy="80" r="9"/><circle cx="57" cy="80" r="9"/></g>
+<path d="M-20-91H20L28-74 26-48 39-15 34 52 23 77H-23L-34 52-39-15-26-48-28-74Z" fill="url(#shell)" stroke="#97e9ff" stroke-width="2"/>
+<path d="M-8-87H0L-12-26-30 4-23 61H-31L-37-16-21-47Z" fill="#f2fcff"/>
+<path d="M10-86H17L25-49 37-17 32 58H22L30 1 15-29Z" fill="#ff4760"/>
+<path d="M-18-30H18L23 7H-23Z" fill="url(#glass)" stroke="#b4f6ff" stroke-width="1.5"/>
+<path d="M-15-26H-7L-13 2H-20Z" fill="#b6faff" opacity=".5"/>
+<path d="M-24 31H-12M-25 38H-12M12 31H24M12 38H25" stroke="#081b3c" stroke-width="4"/>
+<circle cy="51" r="12" fill="#edfaff"/><text y="55" text-anchor="middle" font-size="12" font-weight="900" fill="#164eaa" font-family="Arial">01</text>
+<path d="M-44 65H44V79H-44Z" fill="#effaff" stroke="#74d7ef" stroke-width="2"/><path d="M-9 65H9V79H-9Z" fill="#ff4760"/>
+<path d="M-26-69H-13M13-69H26" stroke="#d5fdff" stroke-width="5"/>
+</g></svg>
+<div class="garage-label"><b>BLUE COMET / 01</b>SIAP MELAJU. SIAP JADI JUARA.</div>
+</div><div class="steps"><span><b>1</b>Baca soal</span><span><b>2</b>Pilih jalur</span><span><b>3</b>Raih podium</span></div></div>
+<div class="setup"><div class="setup-label">01 / Pilih mode balapan</div>
+    <div class="chips" id="modes" role="radiogroup" aria-label="Mode permainan"><button class="chip" type="button" role="radio" data-m="solo">🏎️<br>Sendiri</button><button class="chip" type="button" role="radio" data-m="cpu">🤖<br>Lawan komputer</button><button class="chip" type="button" role="radio" data-m="duel">👫<br>Duel 2–4 pemain</button></div>
+    <div class="chips" id="np" role="radiogroup" aria-label="Jumlah pemain" hidden><button class="chip" type="button" role="radio" data-n="2">2 pemain</button><button class="chip" type="button" role="radio" data-n="3">3 pemain</button><button class="chip" type="button" role="radio" data-n="4">4 pemain</button></div>
+    <div class="setup-label classes">02 / Pilih kelas &amp; mulai</div><div id="lvs"></div>
+    <p class="hint" id="mh"></p></div>
+  </div></section>
+
+  <section id="res" class="scr" hidden><div class="card">
+    <h2 id="rt"></h2><div id="rs" style="font-size:44px;letter-spacing:6px"></div>
+    <p id="rp"></p>
+    <button class="go" id="again" type="button">Balapan lagi</button><button class="go alt" id="tomenu" type="button">Pilih kelas</button>
+  </div></section>
+</div>
+<script>
+(function(){
+'use strict';
+var $=function(s){return document.querySelector(s)};
+var F='"Segoe UI","Trebuchet MS",system-ui,sans-serif',FD='Impact,Haettenschweiler,"Arial Narrow Bold","Arial Black",sans-serif',N=8,sl=0;
+/* Bank soal: gambar|soal|jawaban benar|salah 1|salah 2 */
+var LV=[
+ {n:'Kelas 1',d:'Huruf, suku kata, dan gambar',c:'#1e88e5',T:11,p:.55,q:[
+ '🍎|Apel diawali huruf …|A|B|E','🐱|Kucing diawali huruf …|K|M|S','🐟|Ikan diawali huruf …|I|A|U','🏠|Ini gambar …|rumah|bola|sapi',
+ '⚽|Ini gambar …|bola|buku|roti','🐄|Ini gambar …|sapi|bebek|kuda','🔤|b + a = …|ba|bi|bu','🔤|m + i = …|mi|ma|mu',
+ '🔤|Pilih huruf vokal:|E|D|G','📖|bu-… (buku)|ku|ti|ma','🌙|Bulan diawali huruf …|B|L|M','🚗|Ini gambar …|mobil|motor|pesawat','🥛|Susu diawali huruf …|S|U|T']},
+ {n:'Kelas 2',d:'Melengkapi kata dan lawan kata',c:'#f57c00',T:9,p:.65,q:[
+ '🍌|Lengkapi: pi_ang|s|k|m','🐘|Lengkapi: gaj_h|a|i|u','🔥|Lawan kata PANAS adalah …|dingin|api|hangat','🐘|Lawan kata BESAR adalah …|kecil|luas|tinggi',
+ '☀️|Lawan kata SIANG adalah …|malam|pagi|sore','🍳|Ibu memasak di …|dapur|kolam|jalan','🍚|Adik … nasi.|makan|minum|tidur','🐦|Burung … di udara.|terbang|berenang|berlari',
+ '🦆|Bebek … di kolam.|berenang|terbang|memanjat','✂️|Kata ma-ta punya … suku kata.|2|1|3','🌸|Persamaan kata CANTIK adalah …|indah|buruk|kotor','🏫|Ejaan yang benar:|sekolah|skolah|sekola','🐐|Nama hewan adalah …|kambing|meja|piring']},
+ {n:'Kelas 3',d:'Kalimat, tanda baca, dan paham bacaan',c:'#8e24aa',T:8,p:.75,q:[
+ '❓|Kalimat tanya diakhiri tanda …|?|.|,','✍️|Nama orang ditulis dengan huruf kapital di awal:|Budi|budi|bUDI','🏙️|Nama kota yang benar:|Jakarta|jakarta|jAKARTA','🙋|… yang membaca buku itu? (menanyakan orang)|Siapa|Kapan|Di mana',
+ '💪|Lawan kata RAJIN adalah …|malas|pintar|sopan','🧠|Persamaan kata PINTAR adalah …|cerdas|bodoh|malas','📚|Kata dasar MEMBACA adalah …|baca|mem|bacaan','🛒|Ibu … sayur di pasar.|membeli|membaca|membuang',
+ '🐈|Kucing …, ayam berkokok.|mengeong|menggonggong|mengembik','📝|Pilih kalimat yang benar:|Aku suka membaca.|aku suka membaca.|Aku suka membaca','🪑|Kata benda adalah …|meja|berlari|cepat','🌷|Dina menyiram bunga tiap pagi. Apa yang disiram Dina?|bunga|pagi|Dina',
+ '☔|Ani membawa payung karena hujan. Mengapa Ani membawa payung?|ada hujan|cuaca panas|mau tidur']}
+];
+var COL=['#2a6df4','#f5b700','#b04bd8'],RC=['#d6202f','#ff7a00','#17a34a'];
+var M='solo',nH=1,nR=3,np=2,cw=0,choice=[],dX=[],cl=[],boostA=[],res=[],AR=[],cur=0,CW=0,CH=0,hb=0,PC=['#e53935','#00acc1','#fb8c00','#ec407a'],KM=[['a','d'],['ArrowLeft','ArrowRight'],['j','l'],['v','n']];
+var MH={solo:'Balap sendiri: kejar tiga mobil komputer. Mobil bintang biru adalah mobilmu. Ketuk jalur atau tombol ◀ ▶.',cpu:'Satu lawan satu melawan mobil komputer. Ketuk jalur atau tombol ◀ ▶.',duel:'Satu layar untuk 2–4 pemain. Tiap pemain punya arena sendiri dengan soal yang sama. Belokkan mobilmu ke jalur jawaban dengan tombol ◀ ▶ di arenamu atau ketuk jalurnya. Papan ketik: P1 A/D, P2 ←/→, P3 J/L, P4 V/N.'};
+function hc(i){return i<nH?(M==='duel'?PC[i]:'#1f5bff'):RC[i-nH]}
+function lab(i){return M==='duel'?String(i+1):'★'}
+function slot(i){return rx+rw*(i+.5)/nH}
+function setMode(m){M=m;document.querySelectorAll('#modes .chip').forEach(function(b){b.setAttribute('aria-checked',b.dataset.m===m)});$('#np').hidden=m!=='duel';$('#mh').textContent=MH[m];menuBuild()}
+function setNp(n){np=n;document.querySelectorAll('#np .chip').forEach(function(b){b.setAttribute('aria-checked',+b.dataset.n===n)})}
+function buildPadsOld(){var b=$('#pads');b.hidden=M!=='duel';if(M!=='duel')return;b.innerHTML='';for(var p=0;p<nH;p++){var d=document.createElement('div');d.className='pad';d.style.borderColor=PC[p];d.innerHTML='<span style="color:'+PC[p]+'">🏎️ Pemain '+(p+1)+'</span><div class="bs">'+[0,1,2].map(function(l){return '<button type="button" data-p="'+p+'" data-l="'+l+'" style="background:'+COL[l]+';color:'+(l===1?'#143a5c':'#fff')+'" aria-label="Pemain '+(p+1)+' pilih '+'ABC'[l]+'">'+'ABC'[l]+'</button>'}).join('')+'</div>';b.appendChild(d)}}
+function lay(w,h,t,dl){W=w;H=h;hudH=t;rw=Math.min(w*.92,560);rx=(w-rw)/2;lw=rw/3;var reserve=dl?54:86,field=Math.max(30,h-t-reserve);cw=Math.min(lw*.5,64,field*.22);ch=cw*2.1;carY=h-reserve-ch*.5-8;bh=Math.min(120,lw*.9,Math.max(24,field*.29))}
+function mkAr(){var hh=$('#hud').offsetHeight||0,n=nH,pt=CW<CH,c=n===4?2:(pt?1:n),r=Math.ceil(n/c),g=6,aw=(CW-g*(c+1))/c,ah=(CH-hh-g*(r+1))/r;AR=[];for(var i=0;i<n;i++){var a={x:g+(i%c)*(aw+g),y:hh+g+Math.floor(i/c)*(ah+g),w:aw,h:ah};AR.push(a);var d=$('#pad'+i);if(d)d.style.cssText='left:'+a.x+'px;top:'+(a.y+a.h-54)+'px;width:'+a.w+'px;height:50px'}}
+function buildPads(){var b=$('#pads');b.hidden=M!=='duel';b.innerHTML='';if(M!=='duel')return;for(var p=0;p<nH;p++){var d=document.createElement('div');d.className='pad';d.id='pad'+p;d.innerHTML='<button type="button" data-p="'+p+'" data-d="-1" style="background:'+PC[p]+'" aria-label="Pemain '+(p+1)+' ke kiri">◀</button><button type="button" data-p="'+p+'" data-d="1" style="background:'+PC[p]+'" aria-label="Pemain '+(p+1)+' ke kanan">▶</button>';b.appendChild(d)}}
+function stp(p,d){if(mode==='race'||mode==='count')choice[p]=Math.max(0,Math.min(2,choice[p]+d))}
+function resolveD(){gate.done=true;gate.v*=2;var ans=gate.o.filter(function(a){return a.ok})[0].t,any=false;for(var p=0;p<nH;p++){var ok=gate.o[choice[p]].ok;res[p]=ok;if(ok){prog[p]++;boostA[p]=1;any=true}}boost=1;fb={t:2.6,ok:true,m:''};$('#qt').textContent='Jawaban: '+ans;sfx(any);say('Jawabannya '+sym(ans))}
+function draw(){if(M==='duel'&&(mode==='count'||mode==='race')){x.fillStyle='#060d1c';x.fillRect(0,0,CW,CH);for(var p=0;p<nH;p++){var a=AR[p];if(!a)continue;x.save();x.beginPath();x.rect(a.x,a.y,a.w,a.h);x.clip();x.translate(a.x,a.y);lay(a.w,a.h,0,true);cur=p;drawSc();x.restore();x.lineWidth=5;x.strokeStyle=PC[p];x.strokeRect(a.x+2.5,a.y+2.5,a.w-5,a.h-5)}lay(CW,CH,hb,false)}else drawSc()}
+function fsT(){var d=document,e=d.documentElement,on=d.fullscreenElement||d.webkitFullscreenElement;try{var r=on?(d.exitFullscreen||d.webkitExitFullscreen).call(d):(e.requestFullscreen||e.webkitRequestFullscreen).call(e);if(r&&r.catch)r.catch(function(){})}catch(er){}}
+function goHome(){mode='menu';gate=null;fb=null;try{if(window.speechSynthesis)speechSynthesis.cancel()}catch(e){}$('#hud').hidden=true;$('#ctl').hidden=true;$('#pads').hidden=true;$('#res').hidden=true;$('#menu').hidden=false;rs();menuBuild()}
+function padSync(){document.querySelectorAll('#pads button').forEach(function(b){b.classList.toggle('on',choice[+b.dataset.p]===+b.dataset.l)})}
+function pickOld(p,l){if(mode!=='race'||!gate||gate.done)return;choice[p]=l;padSync();if(snd)tone(500+l*120,.08,'sine',.06)}
+function resolveOld(){gate.done=true;gate.v*=2;var ans=gate.o.filter(function(a){return a.ok})[0].t,m=[];for(var p=0;p<nH;p++){var ok=choice[p]!=null&&gate.o[choice[p]].ok;if(ok)prog[p]++;m.push('P'+(p+1)+(ok?' ✅':' ❌'))}boost=1;fb={t:2.6,ok:true,m:'Jawaban: '+ans+'   '+m.join('  ')};sfx(true);say('Jawabannya '+sym(ans))}
+function duelEnd(){var t,p='';if(M==='cpu'){var d=prog[0]-prog[1];t=d>0?'🏆 Kamu menang!':d<0?'🤖 Komputer menang':'🤝 Seri!';p='Kamu benar '+prog[0]+' soal, komputer benar '+prog[1]+' soal. '+(d>0?'Hebat!':'Ayo coba lagi, kamu pasti bisa!')}else{var mx=Math.max.apply(null,prog),w=[],a=[];for(var i=0;i<nH;i++){if(prog[i]===mx)w.push(i+1);a.push('Pemain '+(i+1)+': '+prog[i]+' benar')}t=w.length>1?'🤝 Seri!':'🏆 Pemain '+w[0]+' menang!';p=a.join(' • ')}$('#rt').textContent=t;$('#rs').textContent='';$('#rp').textContent=p}
+var cv=$('#cv'),x=cv.getContext('2d'),W=0,H=0,rx=0,rw=0,lw=0,carY=0,ch=0,bh=0,hudH=0;
+var reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var mode='menu',lvl=0,qs=[],qi=0,lane=1,carX=0,prog=[],disp=[],rX=[0,0,0],gate=null,fb=null,cnt=0,scroll=0,boost=0,shake=0,right=0,snd=true,tm=0,ac=null,best={};
+try{best=JSON.parse(localStorage.getItem('bb-best')||'{}')||{}}catch(e){best={}}
+function rs(){var d=window.devicePixelRatio||1;CW=cv.clientWidth;CH=cv.clientHeight;cv.width=CW*d;cv.height=CH*d;x.setTransform(d,0,0,d,0,0);
+ lay(CW,CH,hb=$('#hud').offsetHeight||0,false);if(M==='duel'&&(mode==='count'||mode==='race'))mkAr()}
+function lx(i){return rx+lw*(i+.5)}
+function shuf(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+/* suara */
+function tone(f,d,t,v){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();var o=ac.createOscillator(),g=ac.createGain();o.type=t||'triangle';o.frequency.value=f;g.gain.value=v||.12;o.connect(g);g.connect(ac.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);o.stop(ac.currentTime+d)}catch(e){}}
+function sfx(ok){if(!snd)return;if(ok){tone(660,.15);setTimeout(function(){tone(880,.25)},130)}else{tone(180,.35,'sawtooth',.08)}}
+function say(t){if(!snd||!window.speechSynthesis)return;try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t.replace(/…|_+/g,' titik titik '));u.lang='id-ID';u.rate=.85;speechSynthesis.speak(u)}catch(e){}}
+function sym(t){return{'?':'tanda tanya','.':'titik',',':'koma','!':'tanda seru'}[t]||t}
+/* alur permainan */
+function start(l){lvl=l;sl=scroll;qs=shuf(LV[l].q).slice(0,N).map(function(s){var a=s.split('|');return{e:a[0],t:a[1],o:a.slice(2)}});qi=0;lane=1;nH=M==='duel'?np:1;nR=M==='solo'?3:M==='cpu'?1:0;prog=[];disp=[];for(var i=0;i<nH+nR;i++){prog.push(0);disp.push(0)}right=0;gate=null;fb=null;choice=[];cl=[];boostA=[];res=[];for(var q0=0;q0<nH;q0++){choice.push(1);cl.push(1);boostA.push(0);res.push(null)}
+ $('#menu').hidden=true;$('#res').hidden=true;$('#hud').hidden=false;$('#ctl').hidden=M==='duel';mode='count';cnt=3.6;$('#hud').classList.toggle('dl',M==='duel');buildPads();rs();carX=lx(1);rX=[lx(0),lx(2),lx(0)];dX=[];for(var j=0;j<nH;j++)dX.push(slot(j));$('#qe').textContent='🏁';$('#qt').textContent='Bersiap di garis start!';buildTrack()}
+function buildTrack(){var t=$('#track');t.querySelectorAll('.dot').forEach(function(d){d.remove()});
+ for(var i=nH+nR-1;i>=0;i--){var d=document.createElement('div');d.className='dot'+(i<nH?' me':'');d.id='d'+i;d.style.background=hc(i);d.textContent=i<nH?lab(i):'';t.appendChild(d)}}
+function nextQ(){var q=qs[qi];$('#qe').textContent=q.e;$('#qt').textContent=q.t;if($('#hud').offsetHeight!==hb)rs();gate={y:hudH-2,done:false,o:shuf(q.o.map(function(t,i){return{t:t,ok:i===0}}))};
+ var dist=carY-ch*.5-bh-hudH;gate.v=M==='duel'?1/LV[lvl].T:dist/LV[lvl].T;gate.p=0;res=[];$('#qe').textContent=q.e;$('#qt').textContent=q.t;say(q.t)}
+function resolve(){if(M==='duel'){resolveD();return}var o=gate.o[lane];gate.done=true;gate.v*=2;var ans=gate.o.filter(function(a){return a.ok})[0].t;
+ if(o.ok){prog[0]++;right++;boost=1;fb={t:1.9,ok:true,m:'Hebat! 🎉'};say('Benar! '+sym(ans))}
+ else{shake=.5;fb={t:2.4,ok:false,m:'Hampir! Jawabannya: '+ans};say('Jawabannya '+sym(ans))}
+ sfx(o.ok);for(var r=nH;r<nH+nR;r++)if(Math.random()<LV[lvl].p)prog[r]++}
+function end(){mode='end';var pl=1+prog.slice(nH).filter(function(v){return v>prog[0]}).length,st=pl==1?3:pl==2?2:1;
+ $('#rt').textContent=['','🥇 Juara 1!','🥈 Juara 2!','🥉 Juara 3!','Ayo coba lagi!'][pl];$('#rs').textContent='⭐'.repeat(st)+'☆'.repeat(3-st);
+ $('#rp').textContent='Kamu menjawab benar '+right+' dari '+N+' soal. '+(pl==1?'Luar biasa, kamu pembaca hebat!':'Bacalah pelan-pelan, kamu pasti bisa lebih cepat!');
+ if(M!=='solo')duelEnd();else if(st>(best[lvl]||0)){best[lvl]=st;try{localStorage.setItem('bb-best',JSON.stringify(best))}catch(e){}}
+ $('#hud').hidden=true;$('#ctl').hidden=true;$('#pads').hidden=true;$('#res').hidden=false;if(snd)say(M==='duel'?'Permainan selesai!':M==='cpu'&&prog[0]<=prog[1]?'Ayo coba lagi!':pl==1?'Selamat! Kamu juara satu!':'Ayo coba lagi!');menuBuild()}
+function menuBuild(){var b=$('#lvs');b.innerHTML='';LV.forEach(function(l,i){var e=document.createElement('button');e.type='button';e.className='lv';e.style.setProperty('--c',l.c);
+ e.innerHTML='<i>'+(M==='solo'?'⭐'.repeat(best[i]||0):'')+'</i>'+l.n+'<small>'+l.d+'</small>';e.onclick=function(){if(snd&&ac===null)tone(1,.01,'sine',.001);start(i)};b.appendChild(e)})}
+function steer(d){if(M!=='duel'&&(mode==='race'||mode==='count'))lane=Math.max(0,Math.min(2,lane+d))}
+/* pembaruan */
+function upd(dt){tm+=dt;
+ if(mode==='menu'||mode==='end'){if(!reduced)scroll+=100*dt;return}
+ boost=Math.max(0,boost-dt*.7);shake=Math.max(0,shake-dt);scroll+=(260+boost*380)*dt;
+ carX+=(lx(lane)-carX)*Math.min(1,dt*12);if(M==='duel')for(var p=0;p<nH;p++){cl[p]+=(choice[p]-cl[p])*Math.min(1,dt*12);boostA[p]=Math.max(0,boostA[p]-dt*.7)}
+ for(var i=0;i<disp.length;i++){disp[i]+=(prog[i]-disp[i])*Math.min(1,dt*2);var d=$('#d'+i);if(d)d.style.left='calc((100% - '+(i<nH?30:24)+'px) * '+(disp[i]/N)+')'}
+ for(var r=0;r<3;r++){var tl=lx((lane+1+(r%2))%3);rX[r]+=(tl-rX[r])*Math.min(1,dt*2)}
+ if(mode==='count'){cnt-=dt;if(cnt<=0){mode='race';nextQ()}return}
+ if(gate){if(M==='duel'){gate.p+=gate.v*dt;if(!gate.done&&gate.p>=1)resolve()}else{gate.y+=gate.v*dt;if(!gate.done&&gate.y+bh>=carY-ch*.5)resolve()}}
+ if(fb){fb.t-=dt;if(fb.t<=0){fb=null;gate=null;qi++;if(qi>=N)end();else nextQ()}}}
+/* gambar */
+function rr(a,b,c,d,r){x.beginPath();if(x.roundRect)x.roundRect(a,b,c,d,r);else x.rect(a,b,c,d)}
+function wrap(t,m){var w=t.split(' '),L=[],c='';w.forEach(function(s){var n=c?c+' '+s:s;if(x.measureText(n).width>m&&c){L.push(c);c=s}else c=n});L.push(c);return L}
+function fit(t,bw,hh){var fs=t.length<=2?46:t.length<=7?30:22,L;for(;fs>=11;fs-=2){x.font='bold '+fs+'px '+F;L=wrap(t,bw-12);if(L.length*fs*1.15<=hh-8&&L.every(function(l){return x.measureText(l).width<=bw-12}))break}return[fs,L]}
+function car0(cx,cy,w,c,fl){var h=w*1.9;x.save();x.translate(cx,cy);
+ if(fl>0){x.fillStyle='rgba(255,150,0,'+fl+')';x.beginPath();x.moveTo(-w*.25,h/2);x.lineTo(0,h/2+w*(.5+fl));x.lineTo(w*.25,h/2);x.fill()}
+ x.fillStyle='#111';[-1,1].forEach(function(a){[-.3,.3].forEach(function(b){x.fillRect(a*w/2-w*.12,b*h-h*.1,w*.24,h*.2)})});
+ x.fillStyle=c;rr(-w/2,-h/2,w,h,w*.32);x.fill();
+ x.fillStyle='rgba(255,255,255,.75)';x.fillRect(-w*.07,-h/2,w*.14,h*.28);x.fillRect(-w*.07,h*.28,w*.14,h*.22);
+ x.fillStyle='#bfe6ff';rr(-w*.34,-h*.2,w*.68,h*.22,6);x.fill();rr(-w*.3,h*.1,w*.6,h*.12,5);x.fill();
+ x.fillStyle='#fff7a8';x.beginPath();x.arc(-w*.28,-h*.45,w*.08,0,7);x.arc(w*.28,-h*.45,w*.08,0,7);x.fill();x.restore()}
+/* Procedural Mini 4WD cars and arena. All artwork is drawn locally. */
+function car(cx,cy,w,c,fl,k,lb){
+ var h=w*2.1,t=reduced?0:tm,lean=k&&!reduced?(M==='duel'?(choice[cur]-cl[cur])*.1:(lx(lane)-carX)*.0018):0;
+ x.save();x.translate(cx,cy);x.rotate(Math.max(-.16,Math.min(.16,lean)));
+ x.fillStyle='#0008';x.beginPath();x.ellipse(w*.07,h*.07,w*.77,h*.56,0,0,Math.PI*2);x.fill();
+ if(k){var glow=x.createRadialGradient(0,0,w*.2,0,0,h*.65);glow.addColorStop(0,c+'44');glow.addColorStop(1,c+'00');x.fillStyle=glow;x.fillRect(-h*.65,-h*.65,h*1.3,h*1.3)}
+ if(fl>.02){
+  var tail=w*(1.2+fl*.9+(reduced?0:Math.sin(t*35)*.15)),g=x.createLinearGradient(0,h*.38,0,h*.5+tail);
+  g.addColorStop(0,'rgba(193,253,255,'+fl+')');g.addColorStop(.25,'rgba(55,217,255,'+fl*.8+')');g.addColorStop(1,'rgba(32,105,255,0)');
+  x.fillStyle=g;[-1,1].forEach(function(s){x.beginPath();x.moveTo(s*w*.2-w*.12,h*.39);x.lineTo(s*w*.25,h*.5+tail);x.lineTo(s*w*.2+w*.12,h*.39);x.fill()});
+ }
+ // Rubber tires with moving tread and exposed hubs.
+ [-1,1].forEach(function(s){[-.29,.29].forEach(function(a){
+  var tx=s*w*.49-w*.13,ty=a*h-h*.105;
+  x.fillStyle='#050b14';rr(tx,ty,w*.26,h*.21,w*.055);x.fill();x.strokeStyle='#3a4c62';x.lineWidth=1;x.stroke();
+  x.fillStyle='#293b50';for(var z=0;z<4;z++)x.fillRect(tx+w*.035,ty+((z/4+t*2)%1)*h*.18,w*.19,Math.max(1,w*.025));
+  x.fillStyle='#8aaec7';x.fillRect(s*w*.49-w*.035,a*h-h*.045,w*.07,h*.09);
+ })});
+ // Carbon chassis and aluminum roller stays: signature Mini 4WD silhouette.
+ x.fillStyle='#142238';rr(-w*.4,-h*.45,w*.8,h*.91,w*.08);x.fill();
+ [-.43,.43].forEach(function(a){x.fillStyle='#7890a7';rr(-w*.72,a*h-w*.045,w*1.44,w*.09,w*.02);x.fill();x.fillStyle='#1d344c';x.fillRect(-w*.64,a*h-w*.018,w*1.28,w*.036)});
+ // Sculpted shell.
+ x.beginPath();x.moveTo(-w*.22,-h*.5);x.lineTo(w*.22,-h*.5);x.lineTo(w*.32,-h*.4);x.lineTo(w*.29,-h*.26);x.lineTo(w*.46,-h*.08);x.lineTo(w*.38,h*.3);x.lineTo(w*.23,h*.45);x.lineTo(-w*.23,h*.45);x.lineTo(-w*.38,h*.3);x.lineTo(-w*.46,-h*.08);x.lineTo(-w*.29,-h*.26);x.lineTo(-w*.32,-h*.4);x.closePath();
+ x.fillStyle=c;x.fill();x.save();x.clip();
+ var shine=x.createLinearGradient(-w*.5,0,w*.5,0);shine.addColorStop(0,'#c9faff99');shine.addColorStop(.4,'#ffffff0a');shine.addColorStop(1,'#00122a99');x.fillStyle=shine;x.fillRect(-w,-h,w*2,h*2);
+ x.fillStyle='#eafaff';x.beginPath();x.moveTo(-w*.11,-h*.5);x.lineTo(-w*.02,-h*.5);x.lineTo(-w*.19,-h*.14);x.lineTo(-w*.36,h*.05);x.lineTo(-w*.26,h*.42);x.lineTo(-w*.35,h*.42);x.lineTo(-w*.44,-h*.05);x.lineTo(-w*.24,-h*.26);x.fill();
+ x.fillStyle='#ff405d';x.beginPath();x.moveTo(w*.1,-h*.5);x.lineTo(w*.18,-h*.5);x.lineTo(w*.3,-h*.24);x.lineTo(w*.43,-h*.05);x.lineTo(w*.32,h*.4);x.lineTo(w*.23,h*.4);x.lineTo(w*.34,-h*.01);x.lineTo(w*.2,-h*.18);x.fill();x.restore();
+ x.strokeStyle='#bbf2ff88';x.lineWidth=1;x.stroke();
+ // Canopy glass, hood vents, and headlights.
+ var glass=x.createLinearGradient(-w*.22,-h*.2,w*.2,h*.07);glass.addColorStop(0,'#8bdeef');glass.addColorStop(.4,'#205276');glass.addColorStop(1,'#06152c');
+ x.fillStyle=glass;x.beginPath();x.moveTo(-w*.18,-h*.19);x.lineTo(w*.18,-h*.19);x.lineTo(w*.25,h*.025);x.lineTo(-w*.25,h*.025);x.closePath();x.fill();x.strokeStyle='#93d9ed';x.lineWidth=1;x.stroke();
+ x.fillStyle='#cefbff77';x.beginPath();x.moveTo(-w*.14,-h*.17);x.lineTo(-w*.055,-h*.17);x.lineTo(-w*.12,h*.005);x.lineTo(-w*.21,h*.005);x.fill();
+ [-1,1].forEach(function(s){x.fillStyle='#06182b';for(var z=0;z<3;z++)x.fillRect(s*w*.23-w*.075,h*(.12+z*.043),w*.15,h*.023);x.fillStyle='#d3fcff';rr(s*w*.2-w*.09,-h*.39,w*.18,h*.032,1);x.fill()});
+ // Number disc and a broad rear wing.
+ x.fillStyle='#f1fcff';x.beginPath();x.arc(0,h*.27,w*.16,0,Math.PI*2);x.fill();x.fillStyle='#153b7c';x.font='900 '+Math.round(w*(lb.length>1?.18:.24))+'px '+F;x.textAlign='center';x.textBaseline='middle';x.fillText(lb,0,h*.27+1);
+ x.fillStyle='#09182b';x.fillRect(-w*.35,h*.35,w*.1,h*.09);x.fillRect(w*.25,h*.35,w*.1,h*.09);
+ x.fillStyle='#e6f8ff';rr(-w*.58,h*.39,w*1.16,h*.095,w*.018);x.fill();x.fillStyle=c;x.fillRect(-w*.58,h*.39,w*1.16,h*.025);x.fillStyle='#ff405d';x.fillRect(-w*.1,h*.39,w*.2,h*.095);
+ [-1,1].forEach(function(s){[-.43,.43].forEach(function(a){x.fillStyle='#07172a';x.beginPath();x.arc(s*w*.72,a*h,w*.105,0,Math.PI*2);x.fill();x.lineWidth=Math.max(1,w*.035);x.strokeStyle=k?'#68ecff':'#b3c9dc';x.stroke();x.fillStyle='#91b4ca';x.beginPath();x.arc(s*w*.72,a*h,w*.035,0,Math.PI*2);x.fill()})});
+ x.restore();
+}
+function drawBg(){
+ var sc=reduced?0:scroll,y,i,g,side=Math.max(0,rx-15);
+ x.fillStyle='#071225';x.fillRect(0,0,W,H);
+ // Arena floor tiles and fixed grandstands slide past the track.
+ x.strokeStyle='#152b42';x.lineWidth=1;
+ for(y=-64+sc*.6%64;y<H;y+=64){x.beginPath();x.moveTo(0,y);x.lineTo(W,y);x.stroke()}
+ for(i=0;i<W;i+=64){x.beginPath();x.moveTo(i,0);x.lineTo(i,H);x.stroke()}
+ if(side>25){[0,rx+rw+15].forEach(function(sx){
+  var sw=side; x.fillStyle='#0c1e34';x.fillRect(sx,0,sw,H);
+  for(y=-220+(sc*.65%220);y<H;y+=220){
+   x.fillStyle='#172f49';rr(sx+8,y+15,Math.max(5,sw-16),145,6);x.fill();
+   var cols=['#4683a4','#3b536d','#b0536b','#b5d3df'];
+   for(var row=0;row<5;row++)for(var col=0;col<Math.floor((sw-22)/16);col++){x.fillStyle=cols[(row*3+col)%4];rr(sx+13+col*16,y+25+row*23,9,12,2);x.fill()}
+   if(sw>95){x.save();x.beginPath();x.rect(sx+8,y+171,sw-16,31);x.clip();x.fillStyle='#143d55';x.fillRect(sx+8,y+171,sw-16,31);x.fillStyle='#78ecff';x.font='italic 900 14px '+F;x.textAlign='center';x.textBaseline='middle';x.fillText(sw>180?'MINI 4WD • NIGHT CUP':'MINI 4WD',sx+sw/2,y+187);x.restore()}
+  }
+ })}
+ // Three molded plastic lanes, cool lighting, and continuous raised rails.
+ g=x.createLinearGradient(rx,0,rx+rw,0);g.addColorStop(0,'#15283d');g.addColorStop(.5,'#243d54');g.addColorStop(1,'#15283d');x.fillStyle=g;x.fillRect(rx,0,rw,H);
+ for(i=0;i<3;i++){
+  x.fillStyle=i%2?'#91d5ff06':'#030e231c';x.fillRect(rx+i*lw+5,0,lw-10,H);
+  x.fillStyle='#010b141f';x.fillRect(lx(i)-lw*.24,0,lw*.1,H);x.fillRect(lx(i)+lw*.14,0,lw*.1,H);
+  x.fillStyle='#b5dfff18';for(y=-110+sc%110;y<H;y+=110){x.fillRect(rx+i*lw+5,y,lw-10,2)}
+  // Low contrast directional arrows stay behind the answer cards.
+  for(y=-260+sc%260;y<H;y+=260){x.strokeStyle='#82c8ea24';x.lineWidth=3;x.beginPath();x.moveTo(lx(i)-lw*.1,y+9);x.lineTo(lx(i),y);x.lineTo(lx(i)+lw*.1,y+9);x.stroke()}
+ }
+ for(i=0;i<4;i++){
+  var xx=rx+lw*i,outer=i===0||i===3;
+  x.fillStyle='#020d1a88';x.fillRect(xx-2,0,outer?13:9,H);
+  x.fillStyle=outer?'#57758a':'#456379';x.fillRect(xx-4,0,outer?8:5,H);
+  x.fillStyle=outer?'#a4e4f4':'#83b1ca';x.fillRect(xx-4,0,2,H);
+  if(outer){for(y=-72+sc%72;y<H;y+=72){x.fillStyle='#fb4e68';x.fillRect(xx-4,y,8,31);x.fillStyle='#ffe4eb';x.fillRect(xx-4,y,8,4)}x.fillStyle='#47defb';x.fillRect(xx+(i===0?-9:8),0,2,H)}
+ }
+ // Trackside light pools.
+ for(y=-300+sc%300;y<H;y+=300){[rx-14,rx+rw+14].forEach(function(xx){var gl=x.createRadialGradient(xx,y,0,xx,y,48);gl.addColorStop(0,'#55dcff26');gl.addColorStop(1,'#55dcff00');x.fillStyle=gl;x.fillRect(xx-48,y-48,96,96);x.fillStyle='#d6fbff';x.fillRect(xx-2,y-12,4,24)})}
+ var sy=carY-ch*1.4+(sc-sl);
+ if(sy>-30&&sy<H){var sq=Math.max(8,rw/22);for(var row=0;row<2;row++)for(var col=0;col<22;col++){x.fillStyle=(row+col)%2?'#071225':'#d9f2ff';x.fillRect(rx+col*sq,sy+row*sq,Math.min(sq,rx+rw-(rx+col*sq)),sq)}}
+ // A subtle vignette gives the cars and answer panels priority.
+ var shade=x.createLinearGradient(0,0,0,H);shade.addColorStop(0,'#020d232f');shade.addColorStop(.5,'#020d2300');shade.addColorStop(1,'#020d2333');x.fillStyle=shade;x.fillRect(0,0,W,H);
+}
+function drawShowCars(){
+ for(var i=0;i<3;i++){var yy=H*.25+i*H*.24+(reduced?0:Math.sin(tm*.7+i*2)*25);car(lx(i),yy,Math.min(lw*.36,55),['#247dff','#ff4862','#ffb238'][i],reduced?0:.25,0,'0'+(i+1))}
+}
+function drawBoost(){
+ var power=M==='duel'?boostA[cur]:boost;if(power<.05)return;
+ x.save();x.strokeStyle='rgba(133,233,255,'+power*.5+')';x.lineWidth=2;
+ for(var i=0;i<14;i++){var xx=rx+((i*137)%Math.max(1,rw)),yy=((tm*850+i*79)%(H+150))-75;if(Math.abs(xx-(M==='duel'?lx(cl[cur]):carX))<cw*.8)continue;x.beginPath();x.moveTo(xx,yy);x.lineTo(xx,yy+35+power*55);x.stroke()}
+ if(W>250){x.globalAlpha=power;x.font='italic 900 '+Math.min(20,W*.05)+'px '+F;x.textAlign='center';x.fillStyle='#adf8ff';x.fillText('TURBO!',W/2,Math.min(H-85,carY+ch*.62))}x.restore();
+}
+function drawConfetti(){
+ if(reduced)return;x.save();var colors=['#64ecff','#ff4c69','#ffe18a','#f2fcff'];
+ for(var i=0;i<65;i++){var xx=(i*193.7+Math.sin(tm+i)*24)%W,yy=(i*71+tm*(45+i%5*11))%(H+40)-20;x.save();x.translate(xx,yy);x.rotate(tm*(i%3-1)+i);x.fillStyle=colors[i%4];x.fillRect(-3,-6,6,12);x.restore()}x.restore();
+}
+
+function drawSc(){
+ drawBg();
+ x.textAlign='center';x.textBaseline='middle';
+ if(mode==='menu'||mode==='end'){drawShowCars();if(mode==='end')drawConfetti();}
+ if(mode!=='menu'&&mode!=='end'){
+  if(M!=='duel')for(var r=0;r<nR;r++){var ry=carY-(disp[r+nH]-disp[0])*H*.1;ry=Math.max(hudH+ch,Math.min(H+ch*2,ry));car(rX[r],ry,cw,RC[r],0,0,String(r*11+7))}
+  if(gate){var gy=M==='duel'?gate.p*(carY-ch*.5-bh):gate.y,pk=M==='duel'?choice[cur]:lane;gate.o.forEach(function(o,i){var cx=lx(i),bw=lw*.88,bx=cx-bw/2,by=gy,pick=gate.done&&i===pk;
+   var gg=x.createLinearGradient(0,by,0,by+bh);if(gate.done){if(o.ok){gg.addColorStop(0,'#2fbf5b');gg.addColorStop(1,'#12762f')}else if(pick){gg.addColorStop(0,'#f0443f');gg.addColorStop(1,'#8e1511')}else{gg.addColorStop(0,'#23252c');gg.addColorStop(1,'#15171c')}}else{gg.addColorStop(0,'#2d313c');gg.addColorStop(1,'#12141a')}x.fillStyle=gg;rr(bx,by,bw,bh,12);x.fill();x.lineWidth=4;x.strokeStyle=gate.done&&!o.ok&&!pick?'#3a3d47':COL[i];x.stroke();x.lineWidth=1.5;x.strokeStyle='rgba(255,255,255,.3)';rr(bx+5,by+5,bw-10,bh-10,8);x.stroke();
+   var f=fit(o.t,bw,bh),L=f[1],fs=f[0];x.font='bold '+fs+'px '+F;x.fillStyle=gate.done&&!o.ok&&!pick?'#7b808c':'#fff';
+   L.forEach(function(l,j){x.fillText(l,cx,by+bh/2+(j-(L.length-1)/2)*fs*1.15)});x.fillStyle=COL[i];x.beginPath();x.arc(cx,by,14,0,7);x.fill();x.lineWidth=3;x.strokeStyle='#e0b84a';x.stroke();x.fillStyle=i===1?'#14161a':'#fff';x.font='bold 17px '+F;x.fillText('ABC'[i],cx,by+1)})}
+  if(M==='duel'){car(lx(cl[cur]),carY,cw,PC[cur],boostA[cur],1,String(cur+1));if(res[cur]!=null){x.font='38px serif';x.fillText(res[cur]?'✅':'❌',W/2,H*.4)}x.fillStyle=PC[cur];rr(4,4,70,22,8);x.fill();x.fillStyle='#fff';x.font='bold 14px '+F;x.fillText('P'+(cur+1)+' ⭐'+prog[cur],39,15)}else{var sx=shake>0&&!reduced?(Math.random()-.5)*10:0;car(carX+sx,carY,cw,'#1f5bff',boost,1,'★')}}
+ if(mode==='count'){var n=Math.ceil(cnt-.6),u=Math.min(W,H),rad=Math.max(9,u*.055),ly=H*.3,lit=n>0?4-n:0;
+  x.fillStyle='rgba(6,7,10,.88)';rr(W/2-rad*4.4,ly-rad*1.8,rad*8.8,rad*3.6,rad*.9);x.fill();x.lineWidth=2;x.strokeStyle='#e0b84a';x.stroke();
+  for(var li=0;li<3;li++){x.fillStyle=n<=0?'#22d65a':(li<lit?'#ff2b2b':'#3a1214');x.beginPath();x.arc(W/2+(li-1)*rad*2.6,ly,rad,0,7);x.fill()}
+  x.font='italic '+Math.min(110,H*.32)+'px '+FD;x.lineWidth=8;x.lineJoin='round';x.strokeStyle='#06070a';x.fillStyle=n>0?'#fff':'#e0b84a';var s=n>0?String(n):'Jalan!';x.strokeText(s,W/2,H*.48);x.fillText(s,W/2,H*.48)}
+ if(boost>.05&&!reduced&&mode==='race')drawBoost();
+ if(fb&&M!=='duel'){var bwid=Math.min(W*.9,420);x.font='bold 26px '+F;var L2=wrap(fb.m,bwid-30),hh=L2.length*32+24;x.fillStyle=fb.ok?'#0f5a2c':'#7a2a0d';rr(W/2-bwid/2,H*.45-hh/2,bwid,hh,14);x.fill();x.lineWidth=3;x.strokeStyle='#e0b84a';x.stroke();x.fillStyle='#fff';
+  L2.forEach(function(l,j){x.fillText(l,W/2,H*.45-hh/2+12+16+j*32)})}}
+var last=0;function loop(t){var dt=Math.min(.05,(t-last)/1000||0);last=t;upd(dt);draw();requestAnimationFrame(loop)}
+/* kontrol */
+cv.addEventListener('pointerdown',function(e){if(M==='duel'){if(mode==='race'||mode==='count'){var cr=cv.getBoundingClientRect();for(var p=0;p<nH;p++){var a=AR[p],px=e.clientX-cr.left-a.x,py=e.clientY-cr.top-a.y;if(px>=0&&px<a.w&&py>=0&&py<a.h-54){var r_=Math.min(a.w*.92,560);choice[p]=Math.max(0,Math.min(2,Math.floor((px-(a.w-r_)/2)/(r_/3))))}}}return}if(mode!=='race'&&mode!=='count')return;lane=Math.max(0,Math.min(2,Math.floor((e.clientX-rx)/lw)))});
+$('#bl').onclick=function(){steer(-1)};$('#br').onclick=function(){steer(1)};
+document.addEventListener('keydown',function(e){var k=e.key;if(k==='ArrowLeft'||k==='a'||k==='A')steer(-1);else if(k==='ArrowRight'||k==='d'||k==='D')steer(1);if(M==='duel'){var c=k.length===1?k.toLowerCase():k;for(var p=0;p<nH;p++){var l=KM[p].indexOf(c);if(l===0)stp(p,-1);else if(l===1)stp(p,1)}}});
+$('#pads').addEventListener('pointerdown',function(e){var b=e.target.closest('button');if(b)stp(+b.dataset.p,+b.dataset.d)});
+$('#pads').addEventListener('click',function(e){var b=e.target.closest('button');if(b&&e.detail===0)stp(+b.dataset.p,+b.dataset.d)});
+$('#snd').onclick=function(){snd=!snd;this.textContent=snd?'🔊':'🔇';if(!snd&&window.speechSynthesis)speechSynthesis.cancel()};
+$('#sp').onclick=function(){if(mode!=='race'||!gate)return;var q=qs[qi];say(q.t+'. Pilihannya: '+gate.o.map(function(o){return sym(o.t)}).join(', '))};
+$('#again').onclick=function(){start(lvl)};
+$('#tomenu').onclick=function(){$('#res').hidden=true;$('#menu').hidden=false;mode='menu';menuBuild()};
+window.addEventListener('resize',rs);
+$('#home').onclick=goHome;$('#fs').onclick=fsT;$('#fs2').onclick=fsT;if(!(document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen))document.querySelectorAll('.fsx').forEach(function(b){b.hidden=true});
+rs();document.querySelectorAll('#modes .chip').forEach(function(b){b.onclick=function(){setMode(b.dataset.m)}});document.querySelectorAll('#np .chip').forEach(function(b){b.onclick=function(){setNp(+b.dataset.n)}});setMode('solo');setNp(2);requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
